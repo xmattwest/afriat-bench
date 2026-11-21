@@ -31,7 +31,10 @@ from dataclasses import dataclass
 import hashlib
 import json
 import os
+from pathlib import Path
 import re
+import subprocess
+import sys
 import threading
 import time
 from typing import Any, Callable, Iterator, Sequence, TypeVar
@@ -500,6 +503,16 @@ GATEWAY_PRESETS: dict[str, dict[str, Any]] = {
     "opencode": {
         "base_url": "https://opencode.ai/zen/v1",
         "api_key_env": "OPENCODE_API_KEY",
+        "opencode_auth_provider": "opencode",
+        "protocol": "auto",
+        "logprobs_default": True,
+        "thinking_extra_body": {},
+        "nothinking_extra_body": {},
+    },
+    "opencode-go": {
+        "base_url": "https://opencode.ai/zen/go/v1",
+        "api_key_env": "OPENCODE_GO_API_KEY",
+        "opencode_auth_provider": "opencode-go",
         "protocol": "auto",
         "logprobs_default": True,
         "thinking_extra_body": {},
@@ -508,6 +521,7 @@ GATEWAY_PRESETS: dict[str, dict[str, Any]] = {
     "openrouter": {
         "base_url": "https://openrouter.ai/api/v1",
         "api_key_env": "OPENROUTER_API_KEY",
+        "opencode_auth_provider": "openrouter",
         "protocol": "openai",
         "logprobs_default": True,
         "thinking_extra_body": {"include_reasoning": True},
@@ -546,6 +560,49 @@ GATEWAY_PRESETS: dict[str, dict[str, Any]] = {
         "nothinking_extra_body": {"enable_thinking": False},
     },
 }
+
+
+def _resolve_runtime_api_key(
+    explicit_key: str | None,
+    api_key_env: str,
+    opencode_auth_provider: str | None = None,
+) -> str:
+    """Resolve API key safely at runtime without printing secrets:
+      1. Explicit `api_key` parameter if passed
+      2. Live macOS Keychain (`security find-generic-password -s <api_key_env> -w`), so Keychain
+         rotations take effect immediately even inside long-lived parent shells
+      3. Process environment (`os.environ[api_key_env]`)
+      4. Standard OpenCode CLI `~/.local/share/opencode/auth.json` provider entry when applicable
+    """
+    if explicit_key is not None:
+        return explicit_key
+    if sys.platform == "darwin" and api_key_env:
+        try:
+            proc = subprocess.run(
+                ["security", "find-generic-password", "-s", api_key_env, "-w"],
+                capture_output=True,
+                text=True,
+                timeout=3.0,
+                check=False,
+            )
+            if proc.returncode == 0 and proc.stdout.strip():
+                return proc.stdout.strip()
+        except Exception:
+            pass
+    env_val = os.environ.get(api_key_env, "").strip()
+    if env_val:
+        return env_val
+    if opencode_auth_provider:
+        auth_file = Path("~/.local/share/opencode/auth.json").expanduser()
+        if auth_file.exists():
+            try:
+                auth_data = json.loads(auth_file.read_text(encoding="utf-8"))
+                entry = auth_data.get(opencode_auth_provider)
+                if isinstance(entry, dict) and entry.get("key"):
+                    return str(entry["key"]).strip()
+            except Exception:
+                pass
+    return ""
 
 
 def parallel_map(backend: Any, fn: Callable[[_T], _R], items: Sequence[_T]) -> list[_R]:
@@ -604,13 +661,22 @@ class OpenAICompatibleAPIBackend(EvalBackend):
         resolved_env = preset.get("api_key_env", api_key_env) if api_key_env == "OPENAI_API_KEY" and preset else api_key_env
         resolved_proto = preset.get("protocol", protocol) if protocol == "auto" and preset else protocol
 
-        # Strip optional `opencode/` prefix that OpenCode CLI displays when hitting `/zen/v1` directly
-        clean_model = model.split("opencode/", 1)[1] if ("opencode.ai" in resolved_base and model.startswith("opencode/")) else model
+        # Strip optional `opencode/` or `opencode-go/` prefix when hitting `/zen/...` directly
+        clean_model = model
+        if "opencode.ai" in resolved_base:
+            for pfx in ("opencode-go/", "opencode/"):
+                if clean_model.startswith(pfx):
+                    clean_model = clean_model[len(pfx) :]
+                    break
 
         self.model = clean_model
         self.model_id = model
         self.base_url = resolved_base
-        self.api_key = api_key if api_key is not None else os.environ.get(resolved_env, "")
+        self.api_key = _resolve_runtime_api_key(
+            api_key,
+            resolved_env,
+            opencode_auth_provider=preset.get("opencode_auth_provider"),
+        )
         self.api_key_env = resolved_env
         self.gateway = gateway or ""
         self.protocol = self._resolve_protocol(resolved_proto, resolved_base, clean_model)
@@ -798,6 +864,24 @@ class OpenAICompatibleAPIBackend(EvalBackend):
                 ]
             }
         return raw_resp
+
+    def list_models(self) -> list[str]:
+        """Fetch model IDs exposed by `GET {base_url}/models` (`$0` metadata call)."""
+        url = f"{self.base_url}/models"
+        headers = {"Accept": "application/json"}
+        if self.api_key:
+            headers["Authorization"] = f"Bearer {self.api_key}"
+            if self.protocol == "anthropic":
+                headers["x-api-key"] = self.api_key
+                headers["anthropic-version"] = "2023-06-01"
+        headers.update(self.extra_headers)
+        req = urllib.request.Request(url, headers=headers, method="GET")
+        with urllib.request.urlopen(req, timeout=self.timeout_s) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+        data = payload.get("data") if isinstance(payload, dict) else payload
+        if isinstance(data, list):
+            return [str(item.get("id", item)) if isinstance(item, dict) else str(item) for item in data]
+        return []
 
     def _chat_completion(
         self,

@@ -78,6 +78,13 @@ def main(argv: list[str] | None = None) -> int:
     p_eval.add_argument("--clamp-mode", type=str, default="all_13_homo_economicus")
     p_eval.add_argument("--out-dir", type=Path, required=True)
 
+    p_models = sub.add_parser("list-models", help="List available models from a gateway (`$0` metadata GET)")
+    p_models.add_argument(
+        "--gateway",
+        choices=tuple(sorted(GATEWAY_PRESETS.keys())),
+        required=True,
+    )
+
     p_ren = sub.add_parser("render", help="Re-render Dawn State HTML & SVG/PNG figures from saved JSON")
     p_ren.add_argument("--results-json", type=Path, required=True)
     p_ren.add_argument("--out-dir", type=Path, required=True)
@@ -160,6 +167,14 @@ def main(argv: list[str] | None = None) -> int:
         out_json = args.out_dir / "evaluation_results.json"
         out_json.write_text(json.dumps(res, indent=2), encoding="utf-8")
         print(f"Saved evaluation results to {out_json}")
+        return 0
+
+    if args.cmd == "list-models":
+        backend = OpenAICompatibleAPIBackend(model="placeholder", gateway=args.gateway)
+        models = backend.list_models()
+        print(f"Gateway '{args.gateway}' ({backend.base_url}) returned {len(models)} models:")
+        for mid in models:
+            print(f"  - {mid}")
         return 0
 
     if args.cmd == "render":
