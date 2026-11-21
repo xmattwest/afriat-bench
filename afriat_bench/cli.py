@@ -148,6 +148,7 @@ def main(argv: list[str] | None = None) -> int:
                 label=args.model,
                 enable_thinking=args.enable_thinking,
                 compare_thinking_hysteresis=args.compare_thinking,
+                verbose=True,
             )
         elif args.track == "synthetic":
             backend = SyntheticArchetypeBackend(persona=args.model)

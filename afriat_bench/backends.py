@@ -513,10 +513,10 @@ GATEWAY_PRESETS: dict[str, dict[str, Any]] = {
     "opencode-go": {
         "base_url": "https://opencode.ai/inference/go/openai/v1",
         "api_key_env": "OPENCODE_GO_API_KEY",
-        "opencode_auth_provider": "opencode-go",
+        "opencode_auth_provider": ("opencode", "opencode-go"),
         "protocol": "openai",
         "logprobs_default": False,
-        "default_max_workers": 2,
+        "default_max_workers": 6,
         "requires_opencode_session": True,
         "thinking_extra_body": {},
         "nothinking_extra_body": {},
@@ -568,7 +568,7 @@ GATEWAY_PRESETS: dict[str, dict[str, Any]] = {
 def _resolve_runtime_api_key(
     explicit_key: str | None,
     api_key_env: str,
-    opencode_auth_provider: str | None = None,
+    opencode_auth_provider: str | Sequence[str] | None = None,
 ) -> str:
     """Resolve API key safely at runtime without printing secrets:
       1. Explicit `api_key` parameter if passed
@@ -579,30 +579,42 @@ def _resolve_runtime_api_key(
     """
     if explicit_key is not None:
         return explicit_key
-    if sys.platform == "darwin" and api_key_env:
-        try:
-            proc = subprocess.run(
-                ["security", "find-generic-password", "-s", api_key_env, "-w"],
-                capture_output=True,
-                text=True,
-                timeout=3.0,
-                check=False,
-            )
-            if proc.returncode == 0 and proc.stdout.strip():
-                return proc.stdout.strip()
-        except Exception:
-            pass
-    env_val = os.environ.get(api_key_env, "").strip()
-    if env_val:
-        return env_val
+    env_candidates = [api_key_env]
+    if api_key_env == "OPENCODE_GO_API_KEY":
+        env_candidates.append("OPENCODE_API_KEY")
+    for env_name in env_candidates:
+        if not env_name:
+            continue
+        if sys.platform == "darwin":
+            try:
+                proc = subprocess.run(
+                    ["security", "find-generic-password", "-s", env_name, "-w"],
+                    capture_output=True,
+                    text=True,
+                    timeout=3.0,
+                    check=False,
+                )
+                if proc.returncode == 0 and proc.stdout.strip():
+                    return proc.stdout.strip()
+            except Exception:
+                pass
+        env_val = os.environ.get(env_name, "").strip()
+        if env_val:
+            return env_val
     if opencode_auth_provider:
+        providers = (
+            [opencode_auth_provider]
+            if isinstance(opencode_auth_provider, str)
+            else list(opencode_auth_provider)
+        )
         auth_file = Path("~/.local/share/opencode/auth.json").expanduser()
         if auth_file.exists():
             try:
                 auth_data = json.loads(auth_file.read_text(encoding="utf-8"))
-                entry = auth_data.get(opencode_auth_provider)
-                if isinstance(entry, dict) and entry.get("key"):
-                    return str(entry["key"]).strip()
+                for prov in providers:
+                    entry = auth_data.get(prov)
+                    if isinstance(entry, dict) and entry.get("key"):
+                        return str(entry["key"]).strip()
             except Exception:
                 pass
     return ""
@@ -646,7 +658,7 @@ class OpenAICompatibleAPIBackend(EvalBackend):
         gateway: str | None = None,
         protocol: str = "auto",
         timeout_s: float = 120.0,
-        max_retries: int = 3,
+        max_retries: int = 5,
         temperature: float = 0.0,
         max_tokens: int = 512,
         thinking_max_tokens: int = 3072,
