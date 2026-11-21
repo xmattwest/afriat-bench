@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+runs/
+hf_export/
+.DS_Store
+*.npz
+.env
+.env.*
+*.pem
+*.key
