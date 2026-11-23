@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Post 1: Frontier Wallet Scorecard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+<style>
+  
+  :root {
+    --ivory: #FFFFF0;
+    --parchment: #F5EEDC;
+    --onyx: #0F0F0F;
+    --slate-deep: #1E3447;
+    --blue-slate: #2C3E50;
+    --slate-mist: #808B90;
+    --golden-orange: #F39C12;
+    --copper-deep: #96590A;
+    --sage-green: #87A96B;
+    --sage-deep: #5F7F4A;
+    --rule: rgba(44, 62, 80, 0.24);
+    --track: rgba(44, 62, 80, 0.11);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--ivory);
+    color: var(--onyx);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+  .card {
+    padding: 30px 38px 34px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    background: var(--ivory);
+  }
+  .brand-center {
+    text-align: center;
+    font-family: Newsreader, Georgia, serif;
+    font-weight: 600;
+    font-size: 42px;
+    line-height: 1.0;
+    letter-spacing: -0.05em;
+    color: var(--blue-slate);
+  }
+  h1.headline {
+    font-family: Newsreader, Georgia, serif;
+    font-weight: 600;
+    font-size: 50px;
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+    color: var(--onyx);
+  }
+  h1.headline .accent { color: var(--copper-deep); }
+  .frame {
+    background: var(--ivory);
+    border: 2px solid var(--blue-slate);
+    border-radius: 14px;
+    padding: 28px 30px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  body { width: 1080px; height: 1020px; }
+  .card { width: 1080px; height: 1020px; }
+  
+      .frame { padding: 32px 30px 22px; }
+      .chart-wrap { position: relative; padding-left: 38px; }
+      .guide-layer { position: absolute; left: 38px; right: 0; top: 38px; height: 500px; pointer-events: none; z-index: 1; }
+      .gline { position: absolute; left: 0; right: 0; border-top: 1.8px dashed rgba(44,62,80,0.38); }
+      .gtick { position: absolute; left: -36px; top: -10px; width: 28px; text-align: right; font-size: 14px; font-weight: 700; color: var(--slate-deep); font-variant-numeric: tabular-nums; }
+      .plot-area { position: relative; display: grid; grid-template-columns: repeat(8, 1fr); gap: 15px; padding-top: 38px; z-index: 2; }
+      .bar-zone { position: relative; height: 500px; display: flex; align-items: flex-end; justify-content: center; border-bottom: 2px solid var(--blue-slate); }
+      .vbar { width: 82%; border-radius: 8px 8px 0 0; position: relative; }
+      .vscore { position: absolute; top: -32px; left: 50%; transform: translateX(-50%); font-size: 21.5px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--onyx); white-space: nowrap; background: var(--ivory); padding: 0 5px; border-radius: 3px; }
+      .xlab { text-align: center; padding-top: 14px; display: flex; flex-direction: column; align-items: center; gap: 7px; }
+      .xlab-chip { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--blue-slate); background: var(--parchment); color: var(--blue-slate); }
+      .xlab-name { font-size: 16.5px; font-weight: 700; line-height: 1.22; color: var(--onyx); }
+      .band-legend { display: flex; justify-content: space-between; font-size: 16px; color: var(--slate-deep); padding-top: 16px; border-top: 1px solid var(--rule); }
+      .sw { display: inline-block; width: 13px; height: 13px; border: 1.5px solid var(--blue-slate); border-radius: 3px; vertical-align: -1px; margin-right: 6px; }
+    
+</style>
+</head>
+<body>
+  <div class="card">
+    
+      <div class="brand-center">afriat-bench.</div>
+      <h1 class="headline">Can you trust an AI agent <span class="accent">with your money yet?</span></h1>
+
+      <div class="frame">
+        <div class="chart-wrap">
+          <div class="guide-layer">
+            <div class="gline" style="bottom: 100%; border-top-style: dotted; opacity: 0.45;"><span class="gtick">100</span></div>
+            <div class="gline" style="bottom: 85%;"><span class="gtick">85</span></div>
+            <div class="gline" style="bottom: 70%;"><span class="gtick">70</span></div>
+            <div class="gline" style="bottom: 50%; border-top-style: dotted; opacity: 0.45;"><span class="gtick">50</span></div>
+            <div style="position:absolute; left:-36px; bottom:-9px; width:28px; text-align:right; font-size:14px; font-weight:700; color:var(--slate-deep);">0</div>
+          </div>
+          <div class="plot-area">
+            <div class='col-wrap'>  <div class='bar-zone'>    <div class='vbar' style='height:92.9%;background:#87A96B;'>      <span class='vscore'>92.9</span>    </div>  </div>  <div class='xlab'>    <span class='xlab-chip'>OpenAI</span>    <div class='xlab-name'>GPT-6.1<br>Sol</div>  </div></div><div class='col-wrap'>  <div class='bar-zone'>    <div class='vbar' style='height:91.7%;background:#87A96B;'>      <span class='vscore'>91.7</span>    </div>  </div>  <div class='xlab'>    <span class='xlab-chip'>Google</span>    <div class='xlab-name'>Gemini 4<br>Carbon</div>  </div></div><div class='col-wrap'>  <div class='bar-zone'>    <div class='vbar' style='height:90.6%;background:#87A96B;'>      <span class='vscore'>90.6</span>    </div>  </div>  <div class='xlab'>    <span class='xlab-chip'>Anthropic</span>    <div class='xlab-name'>Claude<br>Opus 5.5</div>  </div></div><div class='col-wrap'>  <div class='bar-zone'>    <div class='vbar' style='height:87.8%;background:#87A96B;'>      <span class='vscore'>87.8</span>    </div>  </div>  <div class='xlab'>    <span class='xlab-chip'>Google</span>    <div class='xlab-name'>Gemini 3.8<br>Flash</div>  </div></div><div class='col-wrap'>  <div class='bar-zone'>    <div class='vbar' style='height:83.8%;background:#F39C12;'>      <span class='vscore'>83.8</span>    </div>  </div>  <div class='xlab'>    <span class='xlab-chip'>OpenAI</span>    <div class='xlab-name'>GPT-6<br>Luna</div>  </div></div><div class='col-wrap'>  <div class='bar-zone'>    <div class='vbar' style='height:68.7%;background:#808B90;'>      <span class='vscore'>68.7</span>    </div>  </div>  <div class='xlab'>    <span class='xlab-chip'>Zhipu</span>    <div class='xlab-name'>GLM 5.3<br>Flash</div>  </div></div><div class='col-wrap'>  <div class='bar-zone'>    <div class='vbar' style='height:67.0%;background:#808B90;'>      <span class='vscore'>67.0</span>    </div>  </div>  <div class='xlab'>    <span class='xlab-chip'>DeepSeek</span>    <div class='xlab-name'>DeepSeek<br>v4.1 Flash</div>  </div></div><div class='col-wrap'>  <div class='bar-zone'>    <div class='vbar' style='height:62.8%;background:#808B90;'>      <span class='vscore'>62.8</span>    </div>  </div>  <div class='xlab'>    <span class='xlab-chip'>DeepSeek</span>    <div class='xlab-name'>DeepSeek<br>v4 Pro</div>  </div></div>
+          </div>
+        </div>
+        <div class="band-legend">
+          <span><span class="sw" style="background:#87A96B;"></span><strong>85&ndash;100:</strong> Fiduciary-Grade</span>
+          <span><span class="sw" style="background:#F39C12;"></span><strong>70&ndash;84:</strong> Needs Guardrails</span>
+          <span><span class="sw" style="background:#808B90;"></span><strong>55&ndash;69:</strong> Vulnerable to Traps</span>
+        </div>
+      </div>
+    
+  </div>
+</body>
+</html>

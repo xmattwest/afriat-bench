@@ -8,6 +8,7 @@ build/
 dist/
 runs/
 hf_export/
+results/live_empirical_v2/afriat_bench_v2_live_results.json
 .DS_Store
 *.npz
 .env

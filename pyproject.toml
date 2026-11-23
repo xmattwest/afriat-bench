@@ -4,16 +4,31 @@ build-backend = "hatchling.build"
 
 [project]
 name = "afriat-bench"
-version = "2.0.0"
-description = "Dual-track benchmark for moral, affective, revealed-preference (GARP/CCEI), and fiduciary rationality in LLM economic agents"
+version = "2.3.0"
+description = "Licensing benchmark (0-100) for revealed-preference consistency, equilibrium bidding, contract vigilance, multi-turn state hygiene, and audit candor in AI financial agents"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.11"
+authors = [{ name = "Matt West" }]
+keywords = [
+    "benchmark",
+    "economics",
+    "revealed-preference",
+    "garp",
+    "fiduciary-ai",
+    "game-theory",
+    "llm-agents",
+]
 dependencies = [
     "numpy>=2.0",
     "scipy>=1.13",
     "matplotlib>=3.9",
 ]
+
+[project.urls]
+Homepage = "https://shelltoho.me/evals/afriat-bench/"
+Repository = "https://github.com/xmattwest/afriat-bench"
+Dataset = "https://huggingface.co/datasets/xmattwest/afriat-bench"
 
 [project.optional-dependencies]
 gpu = [
@@ -33,6 +48,26 @@ afriat-bench-audit = "afriat_bench.schema:main_audit"
 
 [tool.hatch.build.targets.wheel]
 packages = ["afriat_bench"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"stimuli/concepts_ring1_visceral.jsonl" = "afriat_bench/_stimuli/concepts_ring1_visceral.jsonl"
+"stimuli/concepts_ring2_strategic.jsonl" = "afriat_bench/_stimuli/concepts_ring2_strategic.jsonl"
+"stimuli/concepts_controls.jsonl" = "afriat_bench/_stimuli/concepts_controls.jsonl"
+"stimuli/pillar_a_budgets.jsonl" = "afriat_bench/_stimuli/pillar_a_budgets.jsonl"
+"stimuli/pillar_b_strategic_deals.jsonl" = "afriat_bench/_stimuli/pillar_b_strategic_deals.jsonl"
+"stimuli/pillar_c_fiduciary.jsonl" = "afriat_bench/_stimuli/pillar_c_fiduciary.jsonl"
+"stimuli/pillar_d_hysteresis.jsonl" = "afriat_bench/_stimuli/pillar_d_hysteresis.jsonl"
+"stimuli/sanity_v2.jsonl" = "afriat_bench/_stimuli/sanity_v2.jsonl"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/afriat_bench",
+    "/stimuli/*.jsonl",
+    "/tests",
+    "/README.md",
+    "/LICENSE",
+    "/pyproject.toml",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
